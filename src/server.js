@@ -1,17 +1,22 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+
 const authRoutes = require('./routes/authRoutes');
+const cashierRoutes = require('./routes/cashierRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 const app = express();
+
+app.use(cors());
+app.use(bodyParser.json());
+
 const PORT = process.env.PORT || 3000;
 
-
-app.use(express.json());
-app.use(cors());
-
-
-app.use('/', authRoutes);
-
+app.use('/auth', authRoutes);
+app.use('/cajero', cashierRoutes);
+app.use('/usuario', userRoutes);
 
 
 app.listen(PORT, () => {

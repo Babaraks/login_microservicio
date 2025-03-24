@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { getUserByEmail } = require('../models/userModel');
-const { getCashierByEmail } = require('../models/cashierModel');
 require('dotenv').config();
 
 const login = async (req, res) => {
@@ -14,12 +13,7 @@ const login = async (req, res) => {
         user = await getUserByEmail(email);
         if (user) {
             userType = user.rol; // Si es un usuario normal, asignamos su rol
-        } else {
-            user = await getCashierByEmail(email);
-            if (user) {
-                userType = "cajero"; // Si es cajero, lo marcamos como "cajero"
-            }
-        }
+        } 
 
         if (!user) {
             return res.status(401).json({ message: 'Usuario no encontrado' });

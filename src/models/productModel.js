@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+
 
 const saltRounds = 12;
 

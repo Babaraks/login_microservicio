@@ -1,5 +1,4 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const productRoutes = require('./src/routes/productRoutes');
 
 dotenv.config();

@@ -1,8 +1,12 @@
 const express = require('express');
-const productRoutes = require('./src/routes/productRoutes');
+const productRoutes = require('./routes/productRoutes');
+const cors = require('cors');
+const bodyParser = require('body-parser')
+
 
 const app = express();
-app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
 
 app.use('/productos', productRoutes);
 

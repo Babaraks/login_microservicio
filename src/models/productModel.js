@@ -1,8 +1,4 @@
 const pool = require('../config/db');
-const bcrypt = require('bcrypt');
-
-
-const saltRounds = 12;
 
 const getAllProducts = async () => {
     const result = await pool.query('SELECT * FROM public.producto ORDER BY "ID" ASC');

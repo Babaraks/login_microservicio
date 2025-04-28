@@ -49,7 +49,7 @@ io.on('connection', socket => {
 const orderRoutes = require('./routes/orderRoute');
 app.use('/order', orderRoutes);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>
-  console.log(`🚀 Microservicio corriendo en http://localhost:${PORT}`)
-);
+const port = process.env.PORT || 3000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
+});

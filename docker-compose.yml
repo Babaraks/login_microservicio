@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  pedido1:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: pedido1
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - pedido_net
+
+  pedido2:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: pedido2
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - pedido_net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - pedido1
+      - pedido2
+    networks:
+      - pedido_net
+
+networks:
+  pedido_net:
+    driver: bridge

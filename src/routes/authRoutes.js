@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../config/db');
-const {login}= require('../controllers/authController');
+const {login, loginCashier,loginManager}= require('../controllers/authController');
 require('dotenv').config();
 const router = express.Router();
 
@@ -13,6 +13,8 @@ router.get('/test-db', async (req, res) => {
     }
 });
 router.post('/login', login);
+router.post('/login/encargado', loginManager);
+router.post('/login/cajero', loginCashier);
 
 
 module.exports = router;

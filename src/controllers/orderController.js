@@ -134,6 +134,17 @@ const getOrderByidManager = async (req, res) => {
     }
 }
 
+const getProductByPointSellByID = async (req, res) => {
+    try {
+        const { ID_punto_venta } = req.params;
+        const products = await orderModel.getProductByPointSellByID(ID_punto_venta);
+        res.status(200).json(products);
+    } catch (error) {
+        console.error('Error al obtener los productos por punto de venta:', error);
+        res.status(500).json({ message: 'Error al obtener los productos por punto de venta' });
+    }
+}
+
 module.exports = {
     createOrder,
     createOrderDetails,
@@ -143,5 +154,6 @@ module.exports = {
     getProductBrute,
     getProductByPointSell,
     getRequestsByManager,
-    getOrderByidManager
+    getOrderByidManager,
+    getProductByPointSellByID
 };

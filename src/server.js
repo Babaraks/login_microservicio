@@ -8,7 +8,10 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: {
+    origin: '*', // Permitir conexiones desde cualquier origen
+    methods: ['GET', 'POST'],
+  },
 });
 
 app.use(cors());

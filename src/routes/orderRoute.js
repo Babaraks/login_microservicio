@@ -17,5 +17,6 @@ router.get('/getProductBrute', authMidrdleware(managermode), orderController.get
 router.get('/getProductByPointSell', authMidrdleware(managermode), orderController.getProductByPointSell);
 router.get('/getRequestsByManager/:ID_encargado', authMidrdleware(managermode), orderController.getRequestsByManager);
 router.get('/getOrderByidManager/:ID_encargado', authMidrdleware(managermode), orderController.getOrderByidManager);
+router.get('/getProductByPointSellByID/:ID_punto_venta', authMidrdleware(cashierMode), orderController.getProductByPointSellByID);
 
 module.exports = router;

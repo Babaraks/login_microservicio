@@ -161,6 +161,14 @@ const getProductByPointSell = async () => {
     return result.rows; 
 }
 
+const getProductByPointSellByID = async (ID_punto_venta) => {
+    const result = await pool.query(
+        'SELECT * FROM public.list_producto_point WHERE "ID_punto_venta" = $1',
+        [ID_punto_venta]
+    );
+    return result.rows; 
+}
+
 const getOrderByidManager = async (ID_encargado) => {
     const result = await pool.query(
         'SELECT * FROM public.list_order_manager WHERE "ID_encargado" = $1',
@@ -188,5 +196,6 @@ module.exports = {
     getProductBrute,
     getProductByPointSell,
     getOrderByidManager,
-    getRequestsByManager
+    getRequestsByManager,
+    getProductByPointSellByID
 };

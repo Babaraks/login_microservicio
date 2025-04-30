@@ -12,7 +12,7 @@ const getUserByEmail = async (email) => {
     }
 };
 
-const getManagerById = async (email) => {
+const getMangerById = async (email) => {
     const client = await pool.connect();
     try {
         const query = `SELECT p.*, s."ID" AS ID_punto 

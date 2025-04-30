@@ -21,7 +21,7 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
+            { id: user.ID, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
             process.env.SECRET,
             { expiresIn: 86400 }
         );
@@ -29,7 +29,7 @@ const login = async (req, res) => {
         res.json({
             token,
             user: {
-                id: user.id,
+                id: user.ID,
                 email: user.email,
                 rol: userType,
                 nombre: user.nombre,
@@ -61,7 +61,7 @@ const loginManager = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
+            { id: user.ID, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
             process.env.SECRET,
             { expiresIn: 86400 }
         );
@@ -69,7 +69,7 @@ const loginManager = async (req, res) => {
         res.json({
             token,
             user: {
-                id: user.id,
+                id: user.ID,
                 email: user.email,
                 rol: userType,
                 nombre: user.nombre,
@@ -101,7 +101,7 @@ const loginCashier = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
+            { id: user.ID, email: user.email, rol: userType, nombre: user.nombre, id_punto_venta: user.id_punto },
             process.env.SECRET,
             { expiresIn: 86400 }
         );
@@ -109,7 +109,7 @@ const loginCashier = async (req, res) => {
         res.json({
             token,
             user: {
-                id: user.id,
+                id: user.ID,
                 email: user.email,
                 rol: userType,
                 nombre: user.nombre,

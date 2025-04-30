@@ -1,14 +1,18 @@
 const pool = require('../config/db');
 
-
 const createOrder = async (order) => {
-    const {ID_punto_venta, ID_encargado} = order;
-    const fecha = new Date();
-    const result = await pool.query(
-        'INSERT INTO public.pedido("ID_punto_venta","ID_encargado", "fecha") VALUES ($1, $2, $3) RETURNING *',
-        [ID_punto_venta, ID_encargado, fecha]
-    );
-    return result.rows[0]; // retorna el pedido creado
+    const client = await pool.connect();
+    try {
+        const {ID_punto_venta, ID_encargado} = order;
+        const fecha = new Date();
+        const result = await client.query(
+            'INSERT INTO public.pedido("ID_punto_venta","ID_encargado", "fecha") VALUES ($1, $2, $3) RETURNING *',
+            [ID_punto_venta, ID_encargado, fecha]
+        );
+        return result.rows[0]; // retorna el pedido creado
+    } finally {
+        client.release();
+    }
 }
 
 const createOrderDetails = async (orderDetails) => {
@@ -16,27 +20,32 @@ const createOrderDetails = async (orderDetails) => {
         throw new Error('Se necesita un arreglo con los detalles del pedido.');
     }
 
-    const values = [];
-    const placeholders = orderDetails.map((detail, index) => {
-        const baseIndex = index * 5;
-        values.push(
-            detail.ID_pedido,
-            detail.ID_producto,
-            detail.cantidad,
-            detail.ID_almacen,
-            detail.status === undefined ? 'Pendiente' : detail.status // Asignar 'Pendiente' si no se proporciona status
-        );
-        return `($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4}, $${baseIndex + 5})`;
-    }).join(', ');
+    const client = await pool.connect();
+    try {
+        const values = [];
+        const placeholders = orderDetails.map((detail, index) => {
+            const baseIndex = index * 5;
+            values.push(
+                detail.ID_pedido,
+                detail.ID_producto,
+                detail.cantidad,
+                detail.ID_almacen,
+                detail.status === undefined ? 'Pendiente' : detail.status // Asignar 'Pendiente' si no se proporciona status
+            );
+            return `($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4}, $${baseIndex + 5})`;
+        }).join(', ');
 
-    const query = `
-        INSERT INTO public.pedido_producto("ID_pedido", "ID_producto", "cantidad", "ID_almacen", "status")
-        VALUES ${placeholders}
-        RETURNING *
-    `;
+        const query = `
+            INSERT INTO public.pedido_producto("ID_pedido", "ID_producto", "cantidad", "ID_almacen", "status")
+            VALUES ${placeholders}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows; // retorna todos los detalles insertados
+        const result = await client.query(query, values);
+        return result.rows; // retorna todos los detalles insertados
+    } finally {
+        client.release();
+    }
 };
 
 const createStatusDates = async (statusDates) => {
@@ -44,52 +53,64 @@ const createStatusDates = async (statusDates) => {
         throw new Error('Se necesita un arreglo con datos de status_fecha');
     }
 
-    const values = [];
-    const placeholders = statusDates.map((item, index) => {
-        const i = index * 3;
-        values.push(
-            item.ID_producto_pedido,
-            item.fecha_envio ?? null,
-            item.fecha_recibido ?? null
-        );
-        return `($${i + 1}, $${i + 2}, $${i + 3})`;
-    }).join(', ');
+    const client = await pool.connect();
+    try {
+        const values = [];
+        const placeholders = statusDates.map((item, index) => {
+            const i = index * 3;
+            values.push(
+                item.ID_producto_pedido,
+                item.fecha_envio ?? null,
+                item.fecha_recibido ?? null
+            );
+            return `($${i + 1}, $${i + 2}, $${i + 3})`;
+        }).join(', ');
 
-    const query = `
-        INSERT INTO public.status_fecha ("ID_producto_pedido", "fecha_envio", "fecha_recibido")
-        VALUES ${placeholders}
-        RETURNING *
-    `;
+        const query = `
+            INSERT INTO public.status_fecha ("ID_producto_pedido", "fecha_envio", "fecha_recibido")
+            VALUES ${placeholders}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows;
+        const result = await client.query(query, values);
+        return result.rows;
+    } finally {
+        client.release();
+    }
 };
+
 const updateStatus = async (statusUpdates) => {
     if (!Array.isArray(statusUpdates) || statusUpdates.length === 0) {
         throw new Error('Se necesita un arreglo de actualizaciones.');
     }
 
-    // Crear arrays para los IDs y los nuevos estados
-    const ids = [];
-    const cases = [];
+    const client = await pool.connect();
+    try {
+        // Crear arrays para los IDs y los nuevos estados
+        const ids = [];
+        const cases = [];
 
-    statusUpdates.forEach((item, index) => {
-        ids.push(item.ID);
-        cases.push(`WHEN ${item.ID} THEN '${item.status}'`);
-    });
+        statusUpdates.forEach((item, index) => {
+            ids.push(item.ID);
+            cases.push(`WHEN ${item.ID} THEN '${item.status}'`);
+        });
 
-    const query = `
-        UPDATE public.pedido_producto
-        SET "status" = CASE "ID"
-            ${cases.join('\n')}
-        END
-        WHERE "ID" = ANY($1::int[])
-        RETURNING *;
-    `;
+        const query = `
+            UPDATE public.pedido_producto
+            SET "status" = CASE "ID"
+                ${cases.join('\n')}
+            END
+            WHERE "ID" = ANY($1::int[])
+            RETURNING *;
+        `;
 
-    const result = await pool.query(query, [ids]);
-    return result.rows;
+        const result = await client.query(query, [ids]);
+        return result.rows;
+    } finally {
+        client.release();
+    }
 }
+
 const minusStock = async (OrderProducts) => {
     const client = await pool.connect();
 
@@ -148,42 +169,67 @@ const minusStock = async (OrderProducts) => {
 };
 
 const getProductBrute = async () => {
-    const result = await pool.query(
-        'SELECT * FROM public.vista_producto_con_cantidad'
-    );
-    return result.rows; 
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT * FROM public.vista_producto_con_cantidad'
+        );
+        return result.rows; 
+    } finally {
+        client.release();
+    }
 }
 
 const getProductByPointSell = async () => {
-    const result = await pool.query(
-        'SELECT * FROM public.punto_venta_producto ORDER BY "ID_punto_venta" ASC, "ID_producto" ASC '
-    );
-    return result.rows; 
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT * FROM public.punto_venta_producto ORDER BY "ID_punto_venta" ASC, "ID_producto" ASC '
+        );
+        return result.rows; 
+    } finally {
+        client.release();
+    }
 }
 
 const getProductByPointSellByID = async (ID_punto_venta) => {
-    const result = await pool.query(
-        'SELECT * FROM public.list_producto_point WHERE "ID_punto_venta" = $1',
-        [ID_punto_venta]
-    );
-    return result.rows; 
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT * FROM public.list_producto_point WHERE "ID_punto_venta" = $1',
+            [ID_punto_venta]
+        );
+        return result.rows; 
+    } finally {
+        client.release();
+    }
 }
 
 const getOrderByidManager = async (ID_encargado) => {
-    const result = await pool.query(
-        'SELECT * FROM public.list_order_manager WHERE "ID_encargado" = $1',
-        [ID_encargado]
-    );
-    return result.rows;
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT * FROM public.list_order_manager WHERE "ID_encargado" = $1',
+            [ID_encargado]
+        );
+        return result.rows;
+    } finally {
+        client.release();
+    }
 }
 
 const getRequestsByManager = async (ID_encargado) => {
     const pendiente = 'Pendiente'
-    const result = await pool.query(
-        'SELECT * FROM public.pedido_producto WHERE "ID_almacen" = $1 AND "status" = $2',
-        [ID_encargado, pendiente]
-    );
-    return result.rows;
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            'SELECT * FROM public.pedido_producto WHERE "ID_almacen" = $1 AND "status" = $2',
+            [ID_encargado, pendiente]
+        );
+        return result.rows;
+    } finally {
+        client.release();
+    }
 }
 
 

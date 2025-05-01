@@ -14,7 +14,7 @@ router.post('/createStatusDates', authMidrdleware(managermode), orderController.
 router.put('/updateStatus', authMidrdleware(managermode), orderController.updateStatus);
 router.post('/minusStock', authMidrdleware(managermode), orderController.minusStock);
 router.get('/getProductBrute', authMidrdleware(managermode), orderController.getProductBrute);
-router.get('/getProductByPointSell', authMidrdleware(managermode), orderController.getProductByPointSell);
+router.get('/getProductByPointSell/:ID_punto_venta', authMidrdleware(managermode), orderController.getProductByPointSell);
 router.get('/getRequestsByManager/:ID_encargado', authMidrdleware(managermode), orderController.getRequestsByManager);
 router.get('/getOrderByidManager/:ID_encargado', authMidrdleware(managermode), orderController.getOrderByidManager);
 router.get('/getProductByPointSellByID/:ID_punto_venta', authMidrdleware(cashierMode), orderController.getProductByPointSellByID);

@@ -104,7 +104,9 @@ const getProductBrute = async (req, res) => {
 
 const getProductByPointSell = async (req, res) => {
     try {
-        const products = await orderModel.getProductByPointSell();
+        const { ID_punto_venta } = req.params;
+
+        const products = await orderModel.getProductByPointSell(ID_punto_venta);
         res.status(200).json(products);
     } catch (error) {
         console.error('Error al obtener los productos por punto de venta:', error);

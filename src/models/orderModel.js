@@ -168,17 +168,56 @@ const minusStock = async (OrderProducts) => {
     }
 };
 
-const getProductBrute = async () => {
+const getProductBrute = async (excludedPointOfSale) => {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            'SELECT * FROM public.vista_producto_con_cantidad'
+            `
+            WITH cantidades_ajustadas AS (
+                SELECT p."ID",
+                       p.nombre,
+                       p.tipo,
+                       pvp."ID_punto_venta",
+                       pvp.cantidad,
+                       row_number() OVER (PARTITION BY pvp."ID_producto" ORDER BY pvp."ID_punto_venta") AS rn
+                  FROM producto p
+                  JOIN punto_venta_producto pvp ON p."ID" = pvp."ID_producto"
+                 WHERE pvp."ID_punto_venta" != $1  -- Exclusión dinámica de ID_punto_venta
+            ),
+            cantidades_filtradas AS (
+                SELECT cantidades_ajustadas."ID",
+                       cantidades_ajustadas.nombre,
+                       cantidades_ajustadas.tipo,
+                       CASE
+                           WHEN cantidades_ajustadas.rn = 1 THEN cantidades_ajustadas.cantidad
+                           WHEN (cantidades_ajustadas.cantidad - 20) > 20 THEN cantidades_ajustadas.cantidad - 20
+                           ELSE 0
+                       END AS cantidad_ajustada
+                  FROM cantidades_ajustadas
+            ),
+            cantidades_finales AS (
+                SELECT cantidades_filtradas."ID",
+                       cantidades_filtradas.nombre,
+                       cantidades_filtradas.tipo,
+                       sum(cantidades_filtradas.cantidad_ajustada) AS cantidad_total
+                  FROM cantidades_filtradas
+                 WHERE cantidades_filtradas.cantidad_ajustada > 0
+                 GROUP BY cantidades_filtradas."ID", cantidades_filtradas.nombre, cantidades_filtradas.tipo
+            )
+            SELECT "ID",
+                   nombre,
+                   tipo,
+                   cantidad_total
+              FROM cantidades_finales;
+            `,
+            [excludedPointOfSale]  // Pasamos el valor dinámico para la exclusión
         );
         return result.rows; 
     } finally {
         client.release();
     }
 }
+
 
 const getProductByPointSell = async (ID_almacen) => {
     const client = await pool.connect();

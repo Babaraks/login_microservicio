@@ -94,7 +94,8 @@ const minusStock = async (req, res) => {
 
 const getProductBrute = async (req, res) => {
     try {
-        const productBrute = await orderModel.getProductBrute();
+        const { ID_punto_venta } = req.params;
+        const productBrute = await orderModel.getProductBrute(ID_punto_venta);
         res.status(200).json(productBrute);
     } catch (error) {
         console.error('Error al obtener el producto bruto:', error);

@@ -223,7 +223,7 @@ const getProductByPointSell = async (ID_almacen) => {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            'SELECT * FROM public.punto_venta_producto WHERE !=$1 ORDER BY "ID_punto_venta" ASC, "ID_producto" ASC '
+            'SELECT * FROM public.punto_venta_producto WHERE "ID_punto_venta" !=$1 ORDER BY "ID_punto_venta" ASC, "ID_producto" ASC ',
             [ID_almacen]
         );
         return result.rows; 

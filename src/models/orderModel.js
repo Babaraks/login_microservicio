@@ -263,7 +263,7 @@ const getRequestsByManager = async (ID_encargado) => {
     const client = await pool.connect();
     try {
         const result = await client.query(
-            'SELECT * FROM public.pedido_producto WHERE "ID_almacen" = $1 AND "status" = $2',
+            'SELECT * FROM public."RequetsManager" WHERE "ID_almacen" = $1 AND "status" = $2',
             [ID_encargado, pendiente]
         );
         return result.rows;

@@ -30,9 +30,9 @@ const getMangerById = async (email) => {
 const getCashierById = async (email) => {
     const client = await pool.connect();
     try {
-        const query = `SELECT p.*, s."ID" AS ID_punto 
+        const query = `SELECT p.*, s."ID_punto_venta" AS ID_punto 
                        FROM usuarios p 
-                       JOIN punto_cajero s ON p."ID" = s."ID_cajero" 
+                       JOIN punto_cajero s ON p."ID" = s."ID_cajero"
                        WHERE correo = $1`;
         const values = [email];
         const result = await client.query(query, values);
